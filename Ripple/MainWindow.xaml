@@ -13,7 +13,7 @@
         TextOptions.TextRenderingMode="Auto"        
         Background="{DynamicResource MaterialDesignPaper}"
         FontFamily="{DynamicResource MaterialDesignFont}"
-        Title="MainWindow" Height="350" Width="525">
+        Title="Ripple" Height="720" Width="1280" WindowState="Maximized" WindowStartupLocation="CenterScreen">
     <Grid>
         
     </Grid>
