@@ -3,6 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:helix="http://helix-toolkit.org/wpf/SharpDX"
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
         xmlns:local="clr-namespace:Ripple"
         mc:Ignorable="d"
@@ -15,6 +16,8 @@
         FontFamily="{DynamicResource MaterialDesignFont}"
         Title="Ripple" Height="720" Width="1280" WindowState="Maximized" WindowStartupLocation="CenterScreen">
     <Grid>
-        
+        <helix:Viewport3DX>
+            
+        </helix:Viewport3DX>
     </Grid>
 </Window>
