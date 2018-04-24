@@ -16,7 +16,23 @@
         FontFamily="{DynamicResource MaterialDesignFont}"
         Title="Ripple" Height="720" Width="1280" WindowState="Maximized" WindowStartupLocation="CenterScreen">
     <Grid>
-        <helix:Viewport3DX>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="{Binding Height, ElementName=DockPanelMenu}"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <DockPanel Grid.Row="0" x:Name="DockPanelMenu">
+            <Menu IsMainMenu="True" DockPanel.Dock="Top">
+                <MenuItem Header="File">
+                    <MenuItem x:Name="MenuItemOpen" Header="Open" Click="MenuItemOpen_Click">
+                        <MenuItem.Icon>
+                            <materialDesign:PackIcon Kind="Map"/>
+                        </MenuItem.Icon>
+                    </MenuItem>
+                </MenuItem>
+            </Menu>
+        </DockPanel>
+        
+        <helix:Viewport3DX Grid.Row="1" x:Name="Viewport">
             
         </helix:Viewport3DX>
     </Grid>
