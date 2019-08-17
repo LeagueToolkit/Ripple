@@ -12,13 +12,21 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-using HelixToolkit.Wpf.SharpDX;
 using Fantome.Libraries.League.IO.WorldGeometry;
 using HelixToolkit.Wpf.SharpDX.Core;
 using System.IO;
 using Imaging.DDSReader;
 using System.Drawing.Imaging;
 using Microsoft.Win32;
+using HelixToolkit.Wpf.SharpDX.Render;
+using HelixToolkit.Wpf.SharpDX;
+
+using mPoint3D = System.Windows.Media.Media3D.Point3D;
+using mVector3D = System.Windows.Media.Media3D.Vector3D;
+using dxPoint3D = SharpDX.Point;
+using HelixToolkit.Wpf.SharpDX.Model.Scene;
+using Fantome.Libraries.League.IO.MapGeometry;
+using SharpDX;
 
 namespace Ripple
 {
@@ -27,64 +35,82 @@ namespace Ripple
     /// </summary>
     public partial class MainWindow : Window
     {
-        public IEffectsManager EffectsManager { get; set; }
-        public RenderTechnique RenderTechnique { get; set; }
+        public SceneNodeGroupModel3D MainModelGroup { get; set; } = new SceneNodeGroupModel3D();
+        public DefaultEffectsManager EffectsManager { get; set; }
+        public PerspectiveCamera Camera { get; set; }
 
         public MainWindow()
         {
             InitializeComponent();
-            this.DataContext = this;
-            (this.Viewport.Camera as ProjectionCamera).FarPlaneDistance = 100000;
-            this.Viewport.EffectsManager = new DefaultEffectsManager(new DefaultRenderTechniquesManager());
-            this.Viewport.RenderTechnique = this.Viewport.EffectsManager.RenderTechniquesManager.RenderTechniques[DefaultRenderTechniqueNames.Diffuse];
 
-            TestLoadWGEO("room.wgeo");
+            this.EffectsManager = new DefaultEffectsManager();
+            this.Camera = CreateCamera();
+            this.Viewport.DataContext = this;
+
         }
+            
 
         private void MenuItemOpen_Click(object sender, RoutedEventArgs e)
         {
             OpenFileDialog dialog = new OpenFileDialog();
             dialog.Multiselect = false;
-            dialog.Filter = "World Geometry files (*.wgeo)|*.wgeo";
+            dialog.Filter = "Map Geometry files (*.mapgeo)|*.mapgeo";
 
-            if(dialog.ShowDialog() == true)
+            if (dialog.ShowDialog() == true)
             {
-                TestLoadWGEO(dialog.FileName);
+                LoadMGEO(dialog.FileName);
             }
+
+
         }
 
-        public void TestLoadWGEO(string fileLocation)
+        public void LoadMGEO(string fileLocation)
         {
-            WGEOFile wgeo = new WGEOFile(fileLocation);
-            List<Element3D> elements = GenerateMeshGeometryModels(wgeo.Models);
-            elements.Add(new DirectionalLight3D()
+            MGEOFile mgeo = new MGEOFile(fileLocation);
+            List<MeshGeometryModel3D> meshGeometryModels = GenerateMeshGeometryModels(mgeo);
+            /*elements.Add(new DirectionalLight3D()
             {
-                Direction = new SharpDX.Vector3(0, -1, -0.5f),
-                Color = new SharpDX.Color4(1, 1, 1, 1)
+                Direction = new Vector3(0, -1, -0.5f),
+                Color = new Color4(1, 1, 1, 1)
             });
             elements.Add(new AmbientLight3D()
             {
-                Color = new SharpDX.Color4(0.64705882352f, 0.64705882352f, 0.64705882352f, 1)
-            });
+                Color = new Color(0.64705882352f, 0.64705882352f, 0.64705882352f, 1)
+            });*/
 
-            this.Viewport.ItemsSource = elements;
+            foreach(MeshGeometryModel3D meshGeometryModel in meshGeometryModels)
+            {
+                GroupNode groupNode = new GroupNode()
+                {
+                    Name = meshGeometryModel.Name
+                };
+
+                groupNode.AddChildNode(new MeshNode()
+                {
+                    Name = meshGeometryModel.Name,
+                    Geometry = meshGeometryModel.Geometry,
+                    Material = meshGeometryModel.Material
+                });
+
+                this.MainModelGroup.AddNode(groupNode);
+            }
         }
 
-        public List<Element3D> GenerateMeshGeometryModels(List<WGEOModel> meshes)
+        public List<MeshGeometryModel3D> GenerateMeshGeometryModels(MGEOFile mgeo)
         {
-            List<Element3D> models = new List<Element3D>(meshes.Count);
+            List<MeshGeometryModel3D> models = new List<MeshGeometryModel3D>(mgeo.Objects.Count);
 
-            foreach (WGEOModel mesh in meshes)
+            foreach (MGEOObject mgeoModel in mgeo.Objects)
             {
                 MeshGeometry3D meshGeometry = new MeshGeometry3D();
 
-                IntCollection indices = new IntCollection(mesh.Indices.Select(x => (int)x).AsEnumerable());
-                Vector3Collection vertices = new Vector3Collection(mesh.Vertices.Count);
-                Vector2Collection uvs = new Vector2Collection(mesh.Vertices.Count);
-                foreach (WGEOVertex vertex in mesh.Vertices)
+                IntCollection indices = new IntCollection(mgeoModel.Indices.Select(x => (int)x).AsEnumerable());
+                Vector3Collection vertices = new Vector3Collection(mgeoModel.Vertices.Count);
+                Vector2Collection uvs = new Vector2Collection(mgeoModel.Vertices.Count);
+                foreach (MGEOVertex vertex in mgeoModel.Vertices)
                 {
-                    vertices.Add(new SharpDX.Vector3(vertex.Position.X, vertex.Position.Y, vertex.Position.Z));
-                    uvs.Add(new SharpDX.Vector2(vertex.UV.X, vertex.UV.Y));
+                    vertices.Add(new Vector3(vertex.Position.X, vertex.Position.Y, vertex.Position.Z));
+                    uvs.Add(new Vector2(vertex.DiffuseUV.X, vertex.DiffuseUV.Y));
                 }
 
                 meshGeometry.Indices = indices;
@@ -93,17 +119,8 @@ namespace Ripple
 
                 MeshGeometryModel3D model = new MeshGeometryModel3D();
                 model.Geometry = meshGeometry;
-                try
-                {
-                    model.Material = new PhongMaterial()
-                    {
-                        DiffuseMap = DDSToImage(mesh.Texture)
-                    };
-                }
-                catch (Exception)
-                {
-                    model.Material = PhongMaterials.Blue;
-                }
+                model.Material = PhongMaterials.Blue;
+                model.Name = mgeoModel.Name;
 
                 models.Add(model);
             }
@@ -119,5 +136,18 @@ namespace Ripple
             return ms;
 
         }
-    }
+
+        private PerspectiveCamera CreateCamera()
+        {
+            return new PerspectiveCamera()
+            {
+                Position = new mPoint3D(0, 0, 5),
+                LookDirection = new mVector3D(-0, -0, -5),
+                UpDirection = new mVector3D(0, 1, 0),
+                NearPlaneDistance = 0.5,
+                FarPlaneDistance = 10000000
+            };
+        }
+    } 
 }
+
