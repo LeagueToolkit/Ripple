@@ -35,7 +35,7 @@
         <helix:Viewport3DX Grid.Row="1" x:Name="Viewport" ShowCoordinateSystem="True" ShowFrameRate="True" ShowTriangleCountInfo="True"
                            Camera="{Binding Camera}" EffectsManager="{Binding EffectsManager}" BackgroundColor="#FF5B5B5B">
             <helix:Element3DPresenter Content="{Binding MainModelGroup}" />
-            <helix:DirectionalLight3D Direction="0, -1, -0.5" Color="White"/>
+            <helix:DirectionalLight3D Direction="0, -1, -0.5" Color="White" />
         </helix:Viewport3DX>
     </Grid>
 </Window>

@@ -113,6 +113,7 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="ContentLoader.cs" />
     <Compile Include="DDS\DDS.cs" />
     <Compile Include="DDS\DDSImage.cs" />
     <Compile Include="DDS\Decompressor.cs" />
@@ -157,6 +158,9 @@
     <Resource Include="dds-reader.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Resource>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="NewFolder1\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
