@@ -113,7 +113,14 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ContentLoader.cs" />
+    <Compile Include="BINData\BINSerializer.cs" />
+    <Compile Include="BINData\BINValueAttribute.cs" />
+    <Compile Include="BINData\BINClasses.cs" />
+    <Compile Include="BINData\Hash.cs" />
+    <Compile Include="BINData\Link.cs" />
+    <Compile Include="BINData\Optional.cs" />
+    <Compile Include="Content\ContentLoader.cs" />
+    <Compile Include="Content\MapData.cs" />
     <Compile Include="DDS\DDS.cs" />
     <Compile Include="DDS\DDSImage.cs" />
     <Compile Include="DDS\Decompressor.cs" />
@@ -159,8 +166,6 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Resource>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="NewFolder1\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

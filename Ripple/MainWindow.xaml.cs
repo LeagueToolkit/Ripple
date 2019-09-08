@@ -3,6 +3,8 @@ using HelixToolkit.Wpf.SharpDX;
 using HelixToolkit.Wpf.SharpDX.Model.Scene;
 using Imaging.DDSReader;
 using Microsoft.Win32;
+using Ripple.BIN;
+using Ripple.Content;
 using SharpDX;
 using System.Collections.Generic;
 using System.Drawing.Imaging;
@@ -24,6 +26,8 @@ namespace Ripple
         public DefaultEffectsManager EffectsManager { get; set; }
         public PerspectiveCamera Camera { get; set; }
 
+        public MGEOFile MapGeometry { get; private set; }
+
         public MainWindow()
         {
             InitializeComponent();
@@ -32,7 +36,7 @@ namespace Ripple
             this.Camera = CreateCamera();
             this.Viewport.DataContext = this;
 
-
+            ContentLoader.LoadMapBIN("929042894B990D88.bin");
         }
             
 
@@ -44,7 +48,8 @@ namespace Ripple
 
             if (dialog.ShowDialog() == true)
             {
-                LoadMapMGEO(dialog.FileName);
+                this.MapGeometry = new MGEOFile(dialog.FileName);
+                this.MainModelGroup = ContentLoader.LoadMapMGEO(this.MapGeometry);
             }
 
 

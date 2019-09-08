@@ -16,8 +16,9 @@ using mPoint3D = System.Windows.Media.Media3D.Point3D;
 using mVector3D = System.Windows.Media.Media3D.Vector3D;
 using dxVector3 = SharpDX.Vector3;
 using dxVector2 = SharpDX.Vector2;
+using Ripple.BIN;
 
-namespace Ripple
+namespace Ripple.Content
 {
     public static class ContentLoader
     {
@@ -51,10 +52,16 @@ namespace Ripple
             return mainModelGroup;
         }
 
-        public void LoadMapBIN(string fileLocation)
+        public static MapData LoadMapBIN(string fileLocation)
         {
+            BINFile bin = new BINFile(fileLocation);
+            Dictionary<Type, List<object>> serialized = BINSerializer.Serialize(bin);
 
+
+            return new MapData();
         }
+
+
 
         private static List<MeshGeometryModel3D> GenerateMeshGeometryModels(MGEOFile mgeo)
         {
