@@ -75,7 +75,7 @@ namespace Ripple.BIN
                     {
                         propertyInfo.SetValue(constructedClass, value.Value);
                     }
-                    else if(value.Type == BINValueType.StringHash)
+                    else if(value.Type == BINValueType.Hash)
                     {
                         propertyInfo.SetValue(constructedClass, new Hash((uint)value.Value));
                     }
@@ -85,6 +85,13 @@ namespace Ripple.BIN
                         object link = Activator.CreateInstance(linkType, new object[] { (uint)value.Value });
 
                         propertyInfo.SetValue(constructedClass, link);
+                    }
+                    else if(value.Type == BINValueType.Optional)
+                    {
+                        Type optionalType = typeof(Optional<>).MakeGenericType(propertyInfo.PropertyType.GenericTypeArguments[0]);
+                        object optional = Activator.CreateInstance(optionalType, new object[] { SerializeOptional(value, propertyInfo) });
+
+                        propertyInfo.SetValue(constructedClass, optional);
                     }
                     else if(value.Type == BINValueType.Structure || value.Type == BINValueType.Embedded)
                     {
@@ -96,7 +103,7 @@ namespace Ripple.BIN
                     }
                     else if(value.Type == BINValueType.Map)
                     {
-                        propertyInfo.SetValue(constructedClass, SerializeMap(value, constructedClass, propertyInfo));
+                        propertyInfo.SetValue(constructedClass, SerializeMap(value, propertyInfo));
                     }
                 }
             }
@@ -143,7 +150,7 @@ namespace Ripple.BIN
             }
         }
 
-        private static object SerializeMap(BINValue value, object parentClass, PropertyInfo propertyInfo)
+        private static object SerializeMap(BINValue value, PropertyInfo propertyInfo)
         {
             BINMap map = value.Value as BINMap;
             object constructedMap = Activator.CreateInstance(propertyInfo.PropertyType);
@@ -151,14 +158,14 @@ namespace Ripple.BIN
 
             foreach(KeyValuePair<BINValue, BINValue> pair in map.Values)
             {
-                object pairKey = map.KeyType == BINValueType.StringHash ? new Hash((uint)pair.Key.Value) : pair.Key.Value;
+                object pairKey = map.KeyType == BINValueType.Hash ? new Hash((uint)pair.Key.Value) : pair.Key.Value;
                 object pairValue = null;
 
                 if (IsPrimitiveType(map.ValueType))
                 {
                     pairValue = pair.Value.Value;
                 }
-                else if (map.ValueType == BINValueType.StringHash)
+                else if (map.ValueType == BINValueType.Hash)
                 {
                     pairValue = new Hash((uint)pair.Value.Value);
                 }
@@ -182,6 +189,43 @@ namespace Ripple.BIN
             return constructedMap;
         }
 
+        private static object SerializeOptional(BINValue value, PropertyInfo propertyInfo)
+        {
+            BINOptional optional = value.Value as BINOptional;
+            object constructedOptional = null;
+
+            if(optional.Value != null)
+            {
+                if (IsPrimitiveType(optional.Type))
+                {
+                    constructedOptional = optional.Value.Value;
+                }
+                else if (value.Type == BINValueType.Hash)
+                {
+                    constructedOptional = new Hash((uint)optional.Value.Value);
+                }
+                else if (value.Type == BINValueType.LinkOffset)
+                {
+                    Type linkType = typeof(Link<>).MakeGenericType(propertyInfo.PropertyType.GenericTypeArguments[0]);
+                    constructedOptional = Activator.CreateInstance(linkType, new object[] { (uint)value.Value });
+                }
+                else if (value.Type == BINValueType.Structure || value.Type == BINValueType.Embedded)
+                {
+                    constructedOptional = SerializeStructure(optional.Value);
+                }
+                else if (value.Type == BINValueType.Container)
+                {
+                    constructedOptional = SerializeContainer(optional.Value, propertyInfo);
+                }
+                else if (value.Type == BINValueType.Map)
+                {
+                    constructedOptional = SerializeMap(optional.Value, propertyInfo);
+                }
+            }
+
+            return constructedOptional;
+        }
+
         private static uint GetValueAttributeHash(PropertyInfo propertyInfo)
         {
             BINValueAttribute valueAttribute = propertyInfo.GetCustomAttribute<BINValueAttribute>();
@@ -193,8 +237,8 @@ namespace Ripple.BIN
         private static bool IsPrimitiveType(BINValueType type)
         {
             return type != BINValueType.Container && type != BINValueType.Embedded && type != BINValueType.Structure &&
-                   type != BINValueType.LinkOffset && type != BINValueType.Map && type != BINValueType.OptionalData &&
-                   type != BINValueType.StringHash;
+                   type != BINValueType.LinkOffset && type != BINValueType.Map && type != BINValueType.Optional &&
+                   type != BINValueType.Hash;
 
         }
     }

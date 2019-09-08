@@ -58,7 +58,7 @@ namespace Ripple.Content
             Dictionary<Type, List<object>> serialized = BINSerializer.Serialize(bin);
 
 
-            return new MapData();
+            return new MapData(serialized);
         }
 
 

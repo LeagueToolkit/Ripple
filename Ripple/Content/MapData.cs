@@ -10,7 +10,7 @@ namespace Ripple.Content
     public class MapData
     {
         public List<MapPointLightType> PointLightTypes { get; set; } = new List<MapPointLightType>();
-        public MapData()
+        public MapData(Dictionary<Type, List<object>> serialized)
         {
 
         }
