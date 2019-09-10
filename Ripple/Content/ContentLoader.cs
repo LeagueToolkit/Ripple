@@ -52,16 +52,11 @@ namespace Ripple.Content
             return mainModelGroup;
         }
 
-        public static MapData LoadMapBIN(string fileLocation)
+        public static Dictionary<uint, object> LoadMapBIN(string fileLocation)
         {
             BINFile bin = new BINFile(fileLocation);
-            Dictionary<Type, List<object>> serialized = BINSerializer.Serialize(bin);
-
-
-            return new MapData(serialized);
+            return BINSerializer.Serialize(bin);
         }
-
-
 
         private static List<MeshGeometryModel3D> GenerateMeshGeometryModels(MGEOFile mgeo)
         {

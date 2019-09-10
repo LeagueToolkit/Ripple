@@ -29,9 +29,9 @@ namespace Ripple.BIN
             }
         }
 
-        public static Dictionary<Type, List<object>> Serialize(BINFile bin)
+        public static Dictionary<uint, object> Serialize(BINFile bin)
         {
-            Dictionary<Type, List<object>> serializedEntries = new Dictionary<Type, List<object>>();
+            Dictionary<uint, object> serializedEntries = new Dictionary<uint, object>();
 
             if(_classMap == null)
             {
@@ -47,13 +47,7 @@ namespace Ripple.BIN
                 else
                 {
                     Type entryType = _classMap[entry.Class];
-
-                    if (!serializedEntries.ContainsKey(entryType))
-                    {
-                        serializedEntries.Add(entryType, new List<object>());
-                    }
-
-                    serializedEntries[entryType].Add(Serialize(entry.Values, entryType));
+                    serializedEntries[entry.Property] = Serialize(entry.Values, entryType);
                 }
             }
 

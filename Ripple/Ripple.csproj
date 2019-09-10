@@ -116,6 +116,7 @@
     <Compile Include="BINData\BINSerializer.cs" />
     <Compile Include="BINData\BINValueAttribute.cs" />
     <Compile Include="BINData\BINClasses.cs" />
+    <Compile Include="BINData\Entry.cs" />
     <Compile Include="BINData\Hash.cs" />
     <Compile Include="BINData\Link.cs" />
     <Compile Include="BINData\Optional.cs" />

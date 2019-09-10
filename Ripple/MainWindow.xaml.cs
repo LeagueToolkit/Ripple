@@ -27,6 +27,9 @@ namespace Ripple
         public PerspectiveCamera Camera { get; set; }
 
         public MGEOFile MapGeometry { get; private set; }
+        public MapData MapData { get; private set; }
+        public Dictionary<uint, object> MapBIN { get; private set; }
+
 
         public MainWindow()
         {
@@ -36,23 +39,24 @@ namespace Ripple
             this.Camera = CreateCamera();
             this.Viewport.DataContext = this;
 
-            ContentLoader.LoadMapBIN("929042894B990D88.bin");
+            this.MapBIN = ContentLoader.LoadMapBIN("AAFA250508F27EEF.bin");
+            this.MapData = new MapData(this.MapBIN);
         }
             
 
         private void MenuItemOpen_Click(object sender, RoutedEventArgs e)
         {
-            OpenFileDialog dialog = new OpenFileDialog();
-            dialog.Multiselect = false;
-            dialog.Filter = "Map Geometry files (*.mapgeo)|*.mapgeo";
+            OpenFileDialog dialog = new OpenFileDialog()
+            {
+                Multiselect = false,
+                Filter = "Map Geometry files (*.mapgeo)|*.mapgeo"
+            };
 
             if (dialog.ShowDialog() == true)
             {
                 this.MapGeometry = new MGEOFile(dialog.FileName);
                 this.MainModelGroup = ContentLoader.LoadMapMGEO(this.MapGeometry);
             }
-
-
         }
 
         private PerspectiveCamera CreateCamera()
