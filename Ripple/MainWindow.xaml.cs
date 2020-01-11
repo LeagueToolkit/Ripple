@@ -7,9 +7,11 @@ using Ripple.BIN;
 using Ripple.Content;
 using SharpDX;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Windows;
 
 using mPoint3D = System.Windows.Media.Media3D.Point3D;
@@ -20,16 +22,27 @@ namespace Ripple
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class MainWindow : Window, INotifyPropertyChanged
     {
-        public SceneNodeGroupModel3D MainModelGroup { get; set; } = new SceneNodeGroupModel3D();
+        public SceneNodeGroupModel3D MainModelGroup 
+        {
+            get => this._mainModelGroup;
+            set
+            {
+                this._mainModelGroup = value;
+                NotifyPropertyChanged();
+            }
+        }
         public DefaultEffectsManager EffectsManager { get; set; }
         public PerspectiveCamera Camera { get; set; }
 
+        private SceneNodeGroupModel3D _mainModelGroup;
+        
         public MGEOFile MapGeometry { get; private set; }
         public MapData MapData { get; private set; }
         public Dictionary<uint, object> MapBIN { get; private set; }
 
+        public event PropertyChangedEventHandler PropertyChanged;
 
         public MainWindow()
         {
@@ -39,7 +52,7 @@ namespace Ripple
             this.Camera = CreateCamera();
             this.Viewport.DataContext = this;
 
-            this.MapBIN = ContentLoader.LoadMapBIN("AAFA250508F27EEF.bin");
+            this.MapBIN = ContentLoader.LoadMapBIN(@"C:\Users\Crauzer\Desktop\New folder\data\Maps\MapGeometry\SR\Base_SRX.materials.bin");
             this.MapData = new MapData(this.MapBIN);
         }
             
@@ -69,6 +82,11 @@ namespace Ripple
                 NearPlaneDistance = 0.5,
                 FarPlaneDistance = 10000000
             };
+        }
+
+        private void NotifyPropertyChanged([CallerMemberName] string propertyName = "")
+        {
+            this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     } 
 }
