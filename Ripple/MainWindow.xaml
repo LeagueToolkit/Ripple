@@ -3,8 +3,8 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:helix="http://helix-toolkit.org/wpf/SharpDX"
-        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        xmlns:Helix="http://helix-toolkit.org/wpf/SharpDX"
+        xmlns:MaterialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
         xmlns:local="clr-namespace:Ripple"
         mc:Ignorable="d"
         TextElement.Foreground="{DynamicResource MaterialDesignBody}"
@@ -14,28 +14,30 @@
         TextOptions.TextRenderingMode="Auto"        
         Background="{DynamicResource MaterialDesignPaper}"
         FontFamily="{DynamicResource MaterialDesignFont}"
-        Title="Ripple" Height="720" Width="1280" WindowState="Maximized" WindowStartupLocation="CenterScreen" Icon="Icon.ico">
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="{Binding Height, ElementName=DockPanelMenu}"/>
-            <RowDefinition Height="*"/>
-        </Grid.RowDefinitions>
-        <DockPanel Grid.Row="0" x:Name="DockPanelMenu">
-            <Menu IsMainMenu="True" DockPanel.Dock="Top">
-                <MenuItem Header="File">
-                    <MenuItem x:Name="MenuItemOpen" Header="Open" Click="MenuItemOpen_Click">
-                        <MenuItem.Icon>
-                            <materialDesign:PackIcon Kind="Map"/>
-                        </MenuItem.Icon>
+        Title="Ripple" Height="1080" Width="1920" WindowState="Maximized" WindowStartupLocation="CenterScreen" Icon="Icon.ico">
+    <MaterialDesign:DialogHost Identifier="RootDialog" DialogTheme="Inherit">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="{Binding Height, ElementName=DockPanelMenu}"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <DockPanel Grid.Row="0" x:Name="DockPanelMenu">
+                <Menu IsMainMenu="True" DockPanel.Dock="Top">
+                    <MenuItem Header="File">
+                        <MenuItem x:Name="MenuItemOpenMap" Header="Open" Click="OnOpenMap" >
+                            <MenuItem.Icon>
+                                <MaterialDesign:PackIcon Kind="Map"/>
+                            </MenuItem.Icon>
+                        </MenuItem>
                     </MenuItem>
-                </MenuItem>
-            </Menu>
-        </DockPanel>
+                </Menu>
+            </DockPanel>
 
-        <helix:Viewport3DX Grid.Row="1" x:Name="Viewport" ShowCoordinateSystem="True" ShowFrameRate="True" ShowTriangleCountInfo="True"
+            <Helix:Viewport3DX Grid.Row="1" x:Name="Viewport" ShowCoordinateSystem="True" ShowFrameRate="True" ShowTriangleCountInfo="True"
                            Camera="{Binding Camera, UpdateSourceTrigger=PropertyChanged}" EffectsManager="{Binding EffectsManager, UpdateSourceTrigger=PropertyChanged}" BackgroundColor="#FF5B5B5B">
-            <helix:Element3DPresenter Content="{Binding MainModelGroup, UpdateSourceTrigger=PropertyChanged}" />
-            <helix:DirectionalLight3D Direction="0, -1, -0.5" Color="White" />
-        </helix:Viewport3DX>
-    </Grid>
+                <Helix:Element3DPresenter Content="{Binding MainModelGroup, UpdateSourceTrigger=PropertyChanged}" />
+                <Helix:DirectionalLight3D Direction="0, -1, -0.5" Color="White" />
+            </Helix:Viewport3DX>
+        </Grid>
+    </MaterialDesign:DialogHost>
 </Window>

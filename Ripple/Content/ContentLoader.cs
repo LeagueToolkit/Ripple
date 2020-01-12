@@ -17,51 +17,19 @@ using mVector3D = System.Windows.Media.Media3D.Vector3D;
 using dxVector3 = SharpDX.Vector3;
 using dxVector2 = SharpDX.Vector2;
 using Ripple.BIN;
+using Ripple.BIN.Classes;
 
 namespace Ripple.Content
 {
     public static class ContentLoader
     {
-        public static SceneNodeGroupModel3D LoadMapMGEO(string fileLocation)
+        public static IEnumerable<GroupNode> LoadMapMGEO(string fileLocation, MapData mapData, string mapPath)
         {
-            return LoadMapMGEO(new MGEOFile(fileLocation));
+            return LoadMapMGEO(new MGEOFile(fileLocation), mapData, mapPath);
         }
 
-        public static SceneNodeGroupModel3D LoadMapMGEO(MGEOFile mgeo)
+        public static IEnumerable<GroupNode> LoadMapMGEO(MGEOFile mgeo, MapData mapData, string mapPath)
         {
-            List<MeshGeometryModel3D> meshGeometryModels = GenerateMeshGeometryModels(mgeo);
-            SceneNodeGroupModel3D mainModelGroup = new SceneNodeGroupModel3D();
-
-            foreach (MeshGeometryModel3D meshGeometryModel in meshGeometryModels)
-            {
-                GroupNode groupNode = new GroupNode()
-                {
-                    Name = meshGeometryModel.Name
-                };
-
-                groupNode.AddChildNode(new MeshNode()
-                {
-                    Name = meshGeometryModel.Name,
-                    Geometry = meshGeometryModel.Geometry,
-                    Material = meshGeometryModel.Material,
-                });
-
-                mainModelGroup.AddNode(groupNode);
-            }
-
-            return mainModelGroup;
-        }
-
-        public static Dictionary<uint, object> LoadMapBIN(string fileLocation)
-        {
-            BINFile bin = new BINFile(fileLocation);
-            return BINSerializer.Serialize(bin);
-        }
-
-        private static List<MeshGeometryModel3D> GenerateMeshGeometryModels(MGEOFile mgeo)
-        {
-            List<MeshGeometryModel3D> models = new List<MeshGeometryModel3D>(mgeo.Objects.Count);
-
             foreach (MGEOObject mgeoModel in mgeo.Objects)
             {
                 IntCollection indices = new IntCollection(mgeoModel.Indices.Select(x => (int)x).AsEnumerable());
@@ -73,24 +41,52 @@ namespace Ripple.Content
                     uvs.Add(new dxVector2(vertex.DiffuseUV.X, vertex.DiffuseUV.Y));
                 }
 
-                MeshGeometry3D meshGeometry = new MeshGeometry3D()
+                foreach (MGEOSubmesh submesh in mgeoModel.Submeshes)
                 {
-                    Indices = indices,
-                    Positions = vertices,
-                    TextureCoordinates = uvs
-                };
+                    GroupNode groupNode = new GroupNode()
+                    {
+                        Name = mgeoModel.Name
+                    };
 
-                MeshGeometryModel3D model = new MeshGeometryModel3D()
-                {
-                    Geometry = meshGeometry,
-                    Material = DiffuseMaterials.Pearl,
-                    Name = mgeoModel.Name
-                };
+                    MeshGeometry3D submeshGeometry3D = new MeshGeometry3D()
+                    {
+                        Indices = indices.GetRange((int)submesh.StartIndex, (int)submesh.IndexCount) as IntCollection,
+                        Positions = vertices,
+                        TextureCoordinates = uvs
+                    };
 
-                models.Add(model);
+                    DiffuseMaterial diffuseMaterial = new DiffuseMaterial()
+                    {
+                        Name = submesh.Material,
+                        DiffuseMap = CreateMaterial(submesh.Material, mapData, mapPath),
+                        EnableUnLit = true
+                    };
+
+                    groupNode.AddChildNode(new MeshNode()
+                    {
+                        Name = mgeoModel.Name + "|" + submesh.Material,
+                        Geometry = submeshGeometry3D,
+                        Material = diffuseMaterial
+                    });
+
+                    yield return groupNode;
+                }
             }
+        }
 
-            return models;
+        private static TextureModel CreateMaterial(string materialName, MapData mapData, string mapPath)
+        {
+            object kek = mapData.StaticMaterials.Find(x => x.Class.Name == materialName);
+            StaticMaterialDef staticMaterialDef = mapData.StaticMaterials.Find(x => x.Class.Name == materialName);
+            StaticMaterialShaderSamplerDef shaderSampler = staticMaterialDef.SamplerValues.Find(x => x.SamplerName.Contains("Diffuse"));
+
+            return new TextureModel(File.OpenRead(Path.Combine(mapPath, shaderSampler.TextureName)));
+        }
+
+        public static Dictionary<uint, object> LoadMapBIN(string fileLocation)
+        {
+            BINFile bin = new BINFile(fileLocation);
+            return BINSerializer.Serialize(bin);
         }
 
         public static MemoryStream DDSToImage(string fileLocation)
